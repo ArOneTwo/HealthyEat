@@ -8,8 +8,8 @@ An App that helps you to fix your healthy living and increase/reduce body weight
 
 -Fruit recognition(Want to make sure what fruit you eat right now? just scan it!)
 
-# Teams
-Our teams consists of 7 People:
+# Team
+Our team consists of 7 People:
 | Full Name  | Bangkit ID | Role |
 | ------------- | ------------- | ------------- |
 | Muhammad Haikal Halim  | A009D4KY3978  | Mobile Development
