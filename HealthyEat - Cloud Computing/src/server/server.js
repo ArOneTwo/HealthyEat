@@ -16,10 +16,6 @@ const foods = [
         isIncreased: false,
     },
 ]
-//GET All IDs(test)
-// app.get('/', (req, res, next) => {
-//     res.send("<h1>Hello stranger</h1>");
-// })
 
 // GET All IDs
 app.get('/food', (req, res) => {
