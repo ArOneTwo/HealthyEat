@@ -6,7 +6,7 @@ An App that helps you to fix your healthy living and increase/reduce body weight
 
 -Daily, Weekly, and Monthly Progress(Keeping your body healthy)
 
--Fruit recognition(Want to make sure what fruit you eat right now? just scan it!)
+-Fruit recognition(Want to know the nutrition in the fruit you eat right now? Just scan it!)
 
 # Team
 Our team consists of 7 People:
