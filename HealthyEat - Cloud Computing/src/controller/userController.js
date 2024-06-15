@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../model/userModel.js');
+const { User, fruit} = require('../model/userModel.js');
 const mysql = require('mysql2');
 const sequelize = require('../config/database.js');
 
@@ -13,34 +13,24 @@ const register = async (req, res) => {
     return res.status(400).json({ message: 'Semua field harus diisi' });
   }
 
-  const existingUser = await User.findOne({ where: { email } });
-  if (existingUser) {
-    return res.status(400).json({ message: 'Email sudah terdaftar' });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = new User({
-    name,
-    email,
-    password: hashedPassword
-  });
-
   try {
-    const query = `INSERT INTO \`test-register2s\` (name, email, password) VALUES (?, ?, ?)`;
-    const values = [name, email, hashedPassword];
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email sudah terdaftar' });
+    }
 
-    sequelize.query(query, { replacements: values, type: sequelize.QueryTypes.INSERT })
-      .then(result => {
-        return res.status(201).json({ message: 'Registrasi berhasil' });
-      })
-      .catch(error => {
-        console.error(error);
-        return res.status(500).json({ message: 'Terjadi kesalahan saat registrasi' });
-      });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword
+    });
+
+    return res.status(201).json({ message: 'Registrasi berhasil' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Terjadi kesalahan saat melakukan registrasi' });
+    return res.status(500).json({ message: 'Terjadi kesalahan saat registrasi' });
   }
 };
 
@@ -52,23 +42,87 @@ const login = async (req, res) => {
     return res.status(400).json({ message: 'Semua field harus diisi' });
   }
 
-  const user = await User.findOne({ where: { email } });
-  if (!user) {
-    return res.status(400).json({ message: 'Email atau password salah' });
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ message: 'Email atau password salah' });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({ message: 'Email atau password salah' });
+    }
+
+    const token = jwt.sign({ userId: user._id }, 'YOUR_SECRET_KEY', { expiresIn: '1h' });
+
+    res.json({ token, user: { name: user.name, email: user.email } });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Terjadi kesalahan saat login' });
   }
-
-  const isPasswordMatch = await bcrypt.compare(password, user.password);
-  if (!isPasswordMatch) {
-    return res.status(400).json({ message: 'Email atau password salah' });
-  }
-
-  const token = jwt.sign({ userId: user._id }, 'YOUR_SECRET_KEY', { expiresIn: '1h' });
-
-  res.json({ token, user: { name: user.name, email: user.email } });
 };
+
+//Dapatkan userID
+const userId = async(req, res) => {
+  const { id } = req.params;
+  
+  try{
+    const user = await User.findByPk(id);
+
+    if(!user){
+      return res.status(404).json({ message: 'User tidak ditemukan'});
+    }
+
+    res.json(user);
+  }catch(error){
+    console.log(error);
+    res.status(500).json( { message: 'Terjadi kesalahan saat mencari id'});
+  }
+}
+
+//Dapatkan ID buah
+const getFruitById = async (req, res) => {
+  const { fruit_id } = req.params; 
+  try {
+    const fruit = await fruit.findOne({ where: { fruit_id }, model: 'fruit-tests' });
+    if (!fruit) {
+      return res.status(404).json({ message: "Buah tidak ditemukan" });
+    }
+    res.status(200).json(fruit);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+//Dapatkan buah
+const getFruit = async (req, res) => {
+  try {
+      const fruits = await fruit.findAll();
+      res.status(200).json(fruits);
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
+}
+
+//Add buah
+const addFruit = async (req, res) => {
+  const { buah, tujuan, urutan, deskripsi } = req.body;
+  const query = 'INSERT INTO `fruit-tests`(`buah`, `tujuan`, `urutan`, `deskripsi`) VALUES (?, ?, ?, ?)';
+  sequelize.query(query, { replacements: [buah, tujuan, urutan, deskripsi], type: sequelize.QueryTypes.INSERT })
+      .then(() => {
+          res.status(201).json({ message: 'Data buah berhasil disimpan' });
+      })
+      .catch((error) => {
+          res.status(400).json({ message: error.message });
+      });
+}
 
 
 module.exports = {
   register,
   login,
+  userId,
+  getFruitById,
+  getFruit,
+  addFruit,
 };
