@@ -1,4 +1,5 @@
-# HealthyEat ![WhatsApp Image 2024-06-18 at 17 01 40_5e2915ef](https://github.com/ArOneTwo/HealthyEat/assets/153373661/3a1d3a22-8d44-4425-9247-6ff055529c0c)
+# HealthyEat 
+![WhatsApp Image 2024-06-18 at 17 01 40_5e2915ef](https://github.com/ArOneTwo/HealthyEat/assets/153373661/3a1d3a22-8d44-4425-9247-6ff055529c0c)
 
 An App that helps you to fix your healthy living and increase/reduce body weight
 
