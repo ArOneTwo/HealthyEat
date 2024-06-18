@@ -82,13 +82,17 @@ const userId = async(req, res) => {
 
 //Dapatkan ID buah
 const getFruitById = async (req, res) => {
-  const { fruit_id } = req.params; 
+  const { fruit_id } = req.params; 
   try {
-    const fruit = await fruit.findOne({ where: { fruit_id }, model: 'fruit-tests' });
-    if (!fruit) {
+    if (!fruit_id) {
+      return res.status(400).json({ message: "Parameter fruit_id tidak ditemukan" });
+    }
+
+    const buahPilihan = await fruit.findOne({ where: { fruit_Id: fruit_id }, model: 'fruit-tests' });
+    if (!buahPilihan) {
       return res.status(404).json({ message: "Buah tidak ditemukan" });
     }
-    res.status(200).json(fruit);
+    res.status(200).json(buahPilihan);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -117,6 +121,35 @@ const addFruit = async (req, res) => {
       });
 }
 
+//Tierlist untuk buah yang menaikkan berat badan
+const getFruitIncrease = async (req, res) => {
+  try {
+    const fruits = await fruit.findAll({
+      where: {
+        tujuan: 'Menaikkan Berat Badan'
+      },
+      order: [['urutan', 'ASC']]
+    });
+    res.status(200).json(fruits);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+//Tierlist untuk buah yang menurunkan berat badan
+const getFruitDecrease = async (req, res) => {
+  try {
+    const fruits = await fruit.findAll({
+      where: {
+        tujuan: 'Menurunkan Berat Badan'
+      },
+      order: [['urutan', 'ASC']]
+    });
+    res.status(200).json(fruits);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 module.exports = {
   register,
@@ -125,4 +158,6 @@ module.exports = {
   getFruitById,
   getFruit,
   addFruit,
+  getFruitIncrease,
+  getFruitDecrease,
 };
