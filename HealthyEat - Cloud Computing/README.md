@@ -8,7 +8,7 @@
 
 3.Create .env and add this config
 
-DB_NAME = <YOUR DATABASE NAME>
+DB_NAME = YOUR DATABASE NAME
 
 DB_USER = root
 
