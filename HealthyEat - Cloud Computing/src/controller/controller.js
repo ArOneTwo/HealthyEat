@@ -1,9 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User, fruit} = require('../model/userModel.js');
+const { User, fruit, Classes, FruitClasses} = require('../model/model.js');
 const mysql = require('mysql2');
 const sequelize = require('../config/database.js');
+const { Op } = require('sequelize');
 
 // Register
 const register = async (req, res) => {
@@ -151,6 +152,97 @@ const getFruitDecrease = async (req, res) => {
   }
 }
 
+//Tambah kelas buah
+const findByClasses = async (req, res) => {
+  try {
+    const classes = await Classes.findAll({
+      include: [
+        {
+          model: fruit,
+          through: {
+            model: FruitClasses
+          },
+          attributes: ['buah', 'tujuan', 'urutan', 'deskripsi']
+        }
+      ]
+    });
+    res.status(200).json(classes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Terjadi kesalahan saat mencari kelas' });
+  }
+};
+
+const addClasses = async (req, res) => {
+  const classesArray = req.body.classes;
+
+  if (!Array.isArray(classesArray) || classesArray.length === 0) {
+    return res.status(400).json({ message: 'Data classes tidak valid' });
+  }
+
+  try {
+    const addedClasses = [];
+    const fruitNames = classesArray.map(className => className.toLowerCase());
+
+    for (const className of fruitNames) {
+      // Cari data buah berdasarkan nama buah yang diawali dengan kelas yang dimasukkan
+      const fruitDataArray = await fruit.findAll({ where: { buah: { [Op.startsWith]: className } } });
+
+      for (const fruitData of fruitDataArray) {
+        const id_fruit = fruitData.fruit_Id;
+
+        const newClass = await Classes.create({
+          fruit_classes: fruitData.buah,
+          id_fruit: id_fruit
+        });
+
+        // Create the relationship in the FruitClasses table
+        await FruitClasses.create({
+          id_fruit: id_fruit,
+          id_classes: newClass.id_classes
+        });
+
+        addedClasses.push({
+          id_classes: newClass.id_classes,
+          fruit_classes: newClass.fruit_classes,
+          id_fruit: newClass.id_fruit
+        });
+      }
+    }
+
+    if (addedClasses.length === 0) {
+      return res.status(404).json({ message: 'Tidak ada kelas yang berhasil ditambahkan' });
+    }
+
+    res.status(201).json({ message: 'Classes berhasil ditambahkan', data: addedClasses });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Terjadi kesalahan saat menambahkan classes' });
+  }
+};
+
+//Cari Kelas buah
+const findByClasses = async (req, res) => {
+  try {
+    const classes = await Classes.findAll({
+      include: [
+        {
+          model: fruit,
+          through: {
+            model: FruitClasses
+          },
+          attributes: ['buah', 'tujuan', 'urutan', 'deskripsi']
+        }
+      ]
+    });
+    res.status(200).json(classes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Terjadi kesalahan saat mencari kelas' });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -160,4 +252,6 @@ module.exports = {
   addFruit,
   getFruitIncrease,
   getFruitDecrease,
+  findByClasses,
+  addClasses,
 };
