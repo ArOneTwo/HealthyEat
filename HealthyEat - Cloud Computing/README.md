@@ -1,8 +1,11 @@
 ﻿# Cloud Computing
 
 **How to Use the API**
+
 1.Download the file
+
 2.Run 'npm i'
+
 3.Create .env and add this config
 
 DB_NAME = <YOUR DATABASE NAME>
